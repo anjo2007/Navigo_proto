@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Navigo Final",
+  "description": "An intelligent, map-centric journey planner that provides multi-modal route options with turn-by-turn navigation links.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
