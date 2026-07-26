@@ -41,6 +41,8 @@ export const saveFirebaseConfig = (config: typeof DEFAULT_FIREBASE_CONFIG) => {
   auth = null;
 };
 
+const FIRESTORE_DB_NAME = "ai-studio-c37d1d2a-75b1-4dc1-b444-5d81fb9a2ef3";
+
 export const initFirebase = () => {
   const config = getFirebaseConfig();
   if (!app) {
@@ -50,7 +52,11 @@ export const initFirebase = () => {
       } else {
         app = getApp();
       }
-      db = getFirestore(app);
+      try {
+        db = getFirestore(app, FIRESTORE_DB_NAME);
+      } catch (e) {
+        db = getFirestore(app);
+      }
       auth = getAuth(app);
     } catch (error) {
       console.error("Firebase init error:", error);

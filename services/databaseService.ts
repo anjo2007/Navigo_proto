@@ -88,21 +88,23 @@ export const databaseService = {
     };
 
     if (db) {
-      try {
-        await setDoc(doc(db, 'profiles', id), {
-          id,
-          name: fullName,
-          email,
-          country,
-          role,
-          isAmbassador,
-          trustScore: profileData.trustScore,
-          greenPoints: profileData.greenPoints,
-          updatedAt: Date.now()
-        }, { merge: true });
-      } catch (e) {
-        console.warn("Firestore profile sync fallback to local storage:", e);
-      }
+      const syncPromise = setDoc(doc(db, 'profiles', id), {
+        id,
+        name: fullName,
+        email,
+        country,
+        role,
+        isAmbassador,
+        trustScore: profileData.trustScore,
+        greenPoints: profileData.greenPoints,
+        updatedAt: Date.now()
+      }, { merge: true }).catch(e => console.warn("Firestore profile sync fallback:", e));
+
+      // 2.5s maximum wait so UI never freezes on slow network
+      await Promise.race([
+        syncPromise,
+        new Promise(res => setTimeout(res, 2500))
+      ]);
     }
 
     localStorage.setItem('proto_user_session', JSON.stringify(profileData));
@@ -121,24 +123,46 @@ export const databaseService = {
 
     const auth = getFirebaseAuth();
     const db = getDb();
-    if (auth?.currentUser && db) {
-      try {
-        const snap = await getDoc(doc(db, 'profiles', auth.currentUser.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          return {
-            id: snap.id,
-            name: data.name || auth.currentUser.displayName || 'User',
-            email: data.email || auth.currentUser.email!,
-            role: data.role || 'user',
-            trustScore: data.trustScore || 50,
-            greenPoints: data.greenPoints || 0,
-            isAmbassador: !!data.isAmbassador
-          };
+    if (auth?.currentUser) {
+      if (db) {
+        try {
+          const fetchPromise = getDoc(doc(db, 'profiles', auth.currentUser.uid));
+          const snap: any = await Promise.race([
+            fetchPromise,
+            new Promise(res => setTimeout(() => res(null), 2500))
+          ]);
+
+          if (snap && snap.exists && snap.exists()) {
+            const data = snap.data();
+            const userObj: User = {
+              id: snap.id,
+              name: data.name || auth.currentUser.displayName || 'User',
+              email: data.email || auth.currentUser.email!,
+              role: data.role || 'user',
+              trustScore: data.trustScore || 50,
+              greenPoints: data.greenPoints || 0,
+              isAmbassador: !!data.isAmbassador
+            };
+            localStorage.setItem('proto_user_session', JSON.stringify(userObj));
+            return userObj;
+          }
+        } catch (e) {
+          console.warn("Firestore get profile error:", e);
         }
-      } catch (e) {
-        console.warn("Firestore get profile error:", e);
       }
+
+      // Fallback profile if Firestore document does not exist yet or is slow
+      const fallbackUser: User = {
+        id: auth.currentUser.uid,
+        name: auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || 'User',
+        email: auth.currentUser.email || '',
+        role: 'user',
+        trustScore: 50,
+        greenPoints: 100,
+        isAmbassador: false
+      };
+      localStorage.setItem('proto_user_session', JSON.stringify(fallbackUser));
+      return fallbackUser;
     }
 
     return GUEST_USER;
