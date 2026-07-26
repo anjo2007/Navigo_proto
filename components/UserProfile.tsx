@@ -12,10 +12,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
     const [activeTab, setActiveTab] = useState<'stats' | 'saved' | 'leaderboard'>('stats');
+    const [userStats, setUserStats] = useState<{ busReports: number; routesSaved: number; totalReports: number }>({ busReports: 0, routesSaved: 0, totalReports: 0 });
 
     useEffect(() => {
         databaseService.getLeaderboard().then(setLeaderboard);
         databaseService.getSavedRoutes(user.id).then(setSavedRoutes);
+        databaseService.getUserStats(user.id).then(setUserStats);
     }, [user.id]);
 
     const getTrustLabel = (score: number) => {
@@ -31,6 +33,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
         await databaseService.deleteSavedRoute(user.id, id);
         setSavedRoutes(prev => prev.filter(r => r.id !== id));
     };
+
+    // Determine achievement states from real data
+    const firstContribution = userStats.totalReports > 0 || userStats.busReports > 0;
+    const routeMasterProgress = Math.min(userStats.busReports, 10);
+    const routeMasterComplete = routeMasterProgress >= 10;
 
     return (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center pointer-events-none">
@@ -100,9 +107,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                                     </span>
                                     <span className="text-[10px] text-ash uppercase font-black tracking-widest opacity-80">Green Points</span>
                                     <div className="w-full bg-white/5 h-1.5 rounded-full mt-6 overflow-hidden">
-                                        <div className="bg-neon h-full transition-all duration-1000" style={{ width: `${(user.greenPoints % 1000) / 10}%` }}></div>
+                                        <div className="bg-neon h-full transition-all duration-1000" style={{ width: `${Math.min((user.greenPoints % 1000) / 10, 100)}%` }}></div>
                                     </div>
-                                    <span className="text-[9px] text-gray-500 mt-2 uppercase font-bold">NEXT BADGE: 2000 PTS</span>
+                                    <span className="text-[9px] text-gray-500 mt-2 uppercase font-bold">
+                                        {user.greenPoints < 1000 ? `NEXT BADGE: 1000 PTS` : user.greenPoints < 5000 ? `NEXT BADGE: 5000 PTS` : `ELITE LEVEL`}
+                                    </span>
                                 </div>
                                 <div className={`bg-obsidian/40 p-6 rounded-2xl border ${trust.border} flex flex-col items-center justify-center text-center transition-all hover:bg-white/5 shadow-inner`}>
                                     <span className={`text-5xl font-black mb-1 ${trust.color} drop-shadow-[0_0_15px_rgba(41,121,255,0.2)]`}>
@@ -123,27 +132,29 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                                 <div className="space-y-5">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 bg-neon/10 rounded-xl flex items-center justify-center text-neon border border-neon/10">
+                                            <div className={`w-10 h-10 ${firstContribution ? 'bg-neon/10' : 'bg-white/5'} rounded-xl flex items-center justify-center ${firstContribution ? 'text-neon' : 'text-ash/40'} border ${firstContribution ? 'border-neon/10' : 'border-white/5'}`}>
                                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17M14 14.66V17M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-mist">First Contribution</p>
-                                                <p className="text-[10px] text-ash font-medium">Earned on joining NaviGo</p>
+                                                <p className="text-[10px] text-ash font-medium">{firstContribution ? 'Earned by contributing data' : 'Submit your first report'}</p>
                                             </div>
                                         </div>
-                                        <div className="text-[10px] text-neon font-black bg-neon/5 px-2 py-1 rounded">VERIFIED</div>
+                                        <div className={`text-[10px] font-black px-2 py-1 rounded ${firstContribution ? 'text-neon bg-neon/5' : 'text-ash/40 bg-white/5'}`}>
+                                            {firstContribution ? 'EARNED' : 'LOCKED'}
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 bg-azure/10 rounded-xl flex items-center justify-center text-azure border border-azure/10">
+                                            <div className={`w-10 h-10 ${routeMasterComplete ? 'bg-azure/10' : 'bg-white/5'} rounded-xl flex items-center justify-center ${routeMasterComplete ? 'text-azure' : 'text-ash/40'} border ${routeMasterComplete ? 'border-azure/10' : 'border-white/5'}`}>
                                                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6v6M15 6v6M2 12h20M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
                                             </div>
                                             <div>
                                                 <p className="text-sm font-bold text-mist">Route Master</p>
-                                                <p className="text-[10px] text-ash font-medium">10 Bus Reports Required</p>
+                                                <p className="text-[10px] text-ash font-medium">{routeMasterComplete ? 'Achievement unlocked!' : `${routeMasterProgress}/10 Bus Reports`}</p>
                                             </div>
                                         </div>
-                                        <div className="text-[11px] text-mist font-bold font-mono">4/10</div>
+                                        <div className={`text-[11px] font-bold font-mono ${routeMasterComplete ? 'text-azure' : 'text-mist'}`}>{routeMasterProgress}/10</div>
                                     </div>
                                 </div>
                             </div>

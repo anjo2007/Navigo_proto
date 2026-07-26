@@ -69,76 +69,7 @@ const generateContentWithFallback = async (params: {
 // Zero-cost memory cache for route searches
 const routeCache = new Map<string, Route[]>();
 
-const generateFallbackSchedules = (mode: TransportMode, start: string, end: string): ScheduledOption[] => {
-  const currentHour = new Date().getHours();
-  return [
-    {
-      id: 'sched-fb-1',
-      name: `${mode === TransportMode.BUS ? 'Express Bus' : 'Superfast Express'} #${100 + Math.floor(Math.random() * 50)}`,
-      startTime: `${(currentHour + 1) % 24}:15`,
-      startLocation: start,
-      endTime: `${(currentHour + 2) % 24}:45`,
-      endLocation: end,
-      priceINR: mode === TransportMode.BUS ? 45 : 120,
-      operator: 'State Transit Board',
-      occupancyHint: 'LOW'
-    },
-    {
-      id: 'sched-fb-2',
-      name: `${mode === TransportMode.BUS ? 'City Limited Bus' : 'Intercity Rapid'} #${200 + Math.floor(Math.random() * 50)}`,
-      startTime: `${(currentHour + 2) % 24}:30`,
-      startLocation: start,
-      endTime: `${(currentHour + 4) % 24}:00`,
-      endLocation: end,
-      priceINR: mode === TransportMode.BUS ? 65 : 160,
-      operator: 'Metro Transport',
-      occupancyHint: 'MODERATE'
-    },
-    {
-      id: 'sched-fb-3',
-      name: `${mode === TransportMode.BUS ? 'Comfort Shuttle' : 'Passenger Local'} #${300 + Math.floor(Math.random() * 50)}`,
-      startTime: `${(currentHour + 3) % 24}:45`,
-      startLocation: start,
-      endTime: `${(currentHour + 5) % 24}:15`,
-      endLocation: end,
-      priceINR: mode === TransportMode.BUS ? 35 : 90,
-      operator: 'Regional Commuter Line',
-      occupancyHint: 'HIGH'
-    }
-  ];
-};
 
-const generateFallbackPlaces = (category: string, location: string): PlaceResult[] => {
-  return [
-    {
-      id: 'place-fb-1',
-      name: `Central ${category} Hub`,
-      address: `Main Station Road, ${location}`,
-      rating: 4.8,
-      category: category,
-      phoneNumber: '+91 98765 43210',
-      openingHours: 'Open 24 Hours'
-    },
-    {
-      id: 'place-fb-2',
-      name: `City ${category} Center`,
-      address: `Plaza Junction, ${location}`,
-      rating: 4.6,
-      category: category,
-      phoneNumber: '+91 98765 12345',
-      openingHours: '6:00 AM - 10:00 PM'
-    },
-    {
-      id: 'place-fb-3',
-      name: `Express ${category} Point`,
-      address: `Highway Boulevard, ${location}`,
-      rating: 4.7,
-      category: category,
-      phoneNumber: '+91 98765 67890',
-      openingHours: '7:00 AM - 11:00 PM'
-    }
-  ];
-};
 
 export const streamRoutes = async (
   start: string, 
@@ -280,7 +211,7 @@ export const searchNearbyPlaces = async (
     });
 
     const parsed = JSON.parse(cleanJson(response.text || '[]'));
-    const results = Array.isArray(parsed) && parsed.length > 0 ? parsed : generateFallbackPlaces(category, location);
+    const results = Array.isArray(parsed) ? parsed : [];
 
     return { 
       results: results.map((r: any) => ({ ...r, id: r.id || Math.random().toString(36).substr(2, 9) })), 
@@ -288,7 +219,7 @@ export const searchNearbyPlaces = async (
     };
   } catch (e) {
     console.error("Place search failed:", e);
-    return { results: generateFallbackPlaces(category, location), sources: [] };
+    return { results: [], sources: [] };
   }
 };
 
@@ -340,13 +271,13 @@ export const getRealtimeSchedules = async (
         occupancyHint: opt.occupancyHint || (index % 2 === 0 ? 'MODERATE' : 'LOW')
       }));
     } else {
-      options = generateFallbackSchedules(mode, start, end);
+      options = [];
     }
 
     return { options, sources: [] };
   } catch (e) {
-    console.warn("Realtime schedules lookup error, using synthesized schedules:", e);
-    return { options: generateFallbackSchedules(mode, start, end), sources: [] };
+    console.warn("Realtime schedules lookup error:", e);
+    return { options: [], sources: [] };
   }
 };
 

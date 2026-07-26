@@ -15,58 +15,18 @@ import {
   Unsubscribe 
 } from 'firebase/firestore';
 
-// Fallback Prototype Users for Instant Local Testing
-const PROTOTYPE_USERS: Record<string, User> = {
-  'commuter@navigo.com': {
-    id: 'proto-commuter-id',
-    name: 'Prototype Commuter',
-    email: 'commuter@navigo.com',
-    role: 'user',
-    trustScore: 50,
-    greenPoints: 240,
-    isAmbassador: false
-  },
-  'scout@navigo.com': {
-    id: 'proto-scout-id',
-    name: 'Prototype Scout',
-    email: 'scout@navigo.com',
-    role: 'contributor',
-    trustScore: 85,
-    greenPoints: 1250,
-    isAmbassador: true
-  },
-  'admin@navigo.com': {
-    id: 'proto-admin-id',
-    name: 'Navigo Controller',
-    email: 'admin@navigo.com',
-    role: 'admin',
-    trustScore: 99,
-    greenPoints: 3400,
-    isAmbassador: true
-  }
-};
-
 export const GUEST_USER: User = {
   id: 'guest-traveler',
   name: 'Guest Traveler',
-  email: 'guest@navigo.com',
+  email: '',
   role: 'user',
-  trustScore: 50,
+  trustScore: 0,
   greenPoints: 0,
   isAmbassador: false
 };
 
 export const databaseService = {
   // --- AUTHENTICATION & PROFILES ---
-
-  loginPrototype: async (email: string, pass: string): Promise<User | null> => {
-    if (pass === 'admin' && PROTOTYPE_USERS[email]) {
-      const user = PROTOTYPE_USERS[email];
-      localStorage.setItem('proto_user_session', JSON.stringify(user));
-      return user;
-    }
-    return null;
-  },
 
   upsertProfile: async (
     id: string, 
@@ -77,13 +37,33 @@ export const databaseService = {
     isAmbassador: boolean
   ): Promise<User | null> => {
     const db = getDb();
+
+    // Check if profile already exists in Firestore to preserve existing points/score
+    let existingPoints = 0;
+    let existingScore = 50;
+    if (db) {
+      try {
+        const existingSnap: any = await Promise.race([
+          getDoc(doc(db, 'profiles', id)),
+          new Promise(res => setTimeout(() => res(null), 2500))
+        ]);
+        if (existingSnap && existingSnap.exists && existingSnap.exists()) {
+          const d = existingSnap.data();
+          existingPoints = d.greenPoints || 0;
+          existingScore = d.trustScore || 50;
+        }
+      } catch (e) {
+        // Continue with defaults
+      }
+    }
+
     const profileData: User = {
       id,
       name: fullName,
       email,
       role,
-      trustScore: role === 'contributor' ? 60 : 50,
-      greenPoints: 100,
+      trustScore: existingScore,
+      greenPoints: existingPoints,
       isAmbassador
     };
 
@@ -97,10 +77,10 @@ export const databaseService = {
         isAmbassador,
         trustScore: profileData.trustScore,
         greenPoints: profileData.greenPoints,
+        createdAt: Date.now(),
         updatedAt: Date.now()
       }, { merge: true }).catch(e => console.warn("Firestore profile sync fallback:", e));
 
-      // 2.5s maximum wait so UI never freezes on slow network
       await Promise.race([
         syncPromise,
         new Promise(res => setTimeout(res, 2500))
@@ -112,10 +92,14 @@ export const databaseService = {
   },
 
   getCurrentUser: async (): Promise<User | null> => {
-    const protoSession = localStorage.getItem('proto_user_session');
-    if (protoSession) {
+    // Check local session cache first for instant load
+    const cachedSession = localStorage.getItem('proto_user_session');
+    if (cachedSession) {
       try {
-        return JSON.parse(protoSession);
+        const cached = JSON.parse(cachedSession);
+        if (cached.id && cached.id !== 'guest-traveler') {
+          return cached;
+        }
       } catch (e) {
         // Continue
       }
@@ -151,18 +135,18 @@ export const databaseService = {
         }
       }
 
-      // Fallback profile if Firestore document does not exist yet or is slow
-      const fallbackUser: User = {
+      // Auth user exists but no Firestore doc yet — create profile from auth data
+      const newUser: User = {
         id: auth.currentUser.uid,
         name: auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || 'User',
         email: auth.currentUser.email || '',
         role: 'user',
         trustScore: 50,
-        greenPoints: 100,
+        greenPoints: 0,
         isAmbassador: false
       };
-      localStorage.setItem('proto_user_session', JSON.stringify(fallbackUser));
-      return fallbackUser;
+      localStorage.setItem('proto_user_session', JSON.stringify(newUser));
+      return newUser;
     }
 
     return GUEST_USER;
@@ -367,12 +351,14 @@ export const databaseService = {
   },
 
   awardGreenPoints: async (userId: string, points: number) => {
+    // Update local cache
     const currentUser = await databaseService.getCurrentUser();
     if (currentUser && currentUser.id === userId) {
       currentUser.greenPoints += points;
       localStorage.setItem('proto_user_session', JSON.stringify(currentUser));
     }
 
+    // Persist to Firestore
     const db = getDb();
     if (db) {
       try {
@@ -399,7 +385,7 @@ export const databaseService = {
             const d = docData.data();
             return {
               userId: docData.id,
-              userName: d.name || 'Scout Member',
+              userName: d.name || 'NaviGo Member',
               points: d.greenPoints || 0,
               rank: index + 1
             };
@@ -410,11 +396,46 @@ export const databaseService = {
       }
     }
 
-    // Default prototype leaderboard entries
-    return [
-      { userId: 'proto-scout-id', userName: 'Prototype Scout', points: 1250, rank: 1 },
-      { userId: 'proto-admin-id', userName: 'Navigo Controller', points: 980, rank: 2 },
-      { userId: 'proto-commuter-id', userName: 'Prototype Commuter', points: 240, rank: 3 }
-    ];
+    // Return current user only if no Firestore data available
+    const currentUser = await databaseService.getCurrentUser();
+    if (currentUser && currentUser.id !== 'guest-traveler') {
+      return [{ userId: currentUser.id, userName: currentUser.name, points: currentUser.greenPoints, rank: 1 }];
+    }
+    return [];
+  },
+
+  // --- ACHIEVEMENT TRACKING ---
+  getUserStats: async (userId: string): Promise<{ busReports: number; routesSaved: number; totalReports: number }> => {
+    const db = getDb();
+    let busReports = 0;
+    let totalReports = 0;
+
+    if (db) {
+      try {
+        const reportsQ = query(collection(db, 'reports'), orderBy('timestamp', 'desc'), limit(100));
+        const reportsSnap = await getDocs(reportsQ);
+        reportsSnap.docs.forEach(d => {
+          if (d.data().userId === userId) {
+            totalReports++;
+            if (d.data().type === 'BUS' || d.data().type === 'OCCUPANCY') busReports++;
+          }
+        });
+      } catch (e) {
+        // Fallback
+      }
+
+      try {
+        const contribSnap = await getDocs(collection(db, 'busContributions'));
+        contribSnap.docs.forEach(d => {
+          if (d.data().userId === userId) busReports++;
+        });
+      } catch (e) {
+        // Fallback
+      }
+    }
+
+    const savedRoutes = await databaseService.getSavedRoutes(userId);
+    return { busReports, routesSaved: savedRoutes.length, totalReports };
   }
 };
+

@@ -17,12 +17,6 @@ const IconGoogle = () => (
 const IconClose = () => (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9"/></svg>
 );
-const IconCommuter = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/><path d="M16 22H8l1-8h6l1 8z"/><path d="M9 14l-1.5 3M15 14l1.5 3"/></svg>
-);
-const IconScout = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" opacity="0.15"/><polygon points="12 6 13.8 10.2 18.2 10.6 14.9 13.5 15.8 18 12 15.6 8.2 18 9.1 13.5 5.8 10.6 10.2 10.2 12 6"/></svg>
-);
 const IconMail = () => (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 6L2 7"/></svg>
 );
@@ -41,9 +35,8 @@ const IconShield = () => (
 const IconAlertTriangle = () => (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 );
-const IconZap = () => (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-);
+
+
 
 interface LoginModalProps {
     onLoginSuccess: (user: User) => void;
@@ -69,16 +62,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
         setLoading(true);
         setErrorMsg(null);
 
-        // 1. Always check prototype/demo accounts first (works offline)
-        const protoUser = await databaseService.loginPrototype(email, password);
-        if (protoUser) {
-            showToast(`Welcome back, ${protoUser.name}!`, 'success');
-            onLoginSuccess(protoUser);
-            setLoading(false);
-            return;
-        }
-
-        // 2. Try Firebase Auth
+        // Try Firebase Auth
         const auth = getFirebaseAuth();
         if (!auth) {
             // Firebase not configured — fall back to local-only account
@@ -109,13 +93,13 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
                         }
                     } catch {}
                 }
-                setErrorMsg('No account found. Try signing up or use a demo account.');
+                setErrorMsg('No account found. Please create an account first.');
             }
             setLoading(false);
             return;
         }
 
-        // 3. Firebase Auth is available
+        // Firebase Auth is available
         try {
             if (mode === 'signup') {
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
@@ -213,16 +197,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
         }
     };
 
-    const quickLogin = async (demoEmail: string, label: string) => {
-        setLoading(true);
-        setErrorMsg(null);
-        const u = await databaseService.loginPrototype(demoEmail, 'admin');
-        if (u) {
-            showToast(`Logged in as ${label}`, 'success');
-            onLoginSuccess(u);
-        }
-        setLoading(false);
-    };
+
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-lg animate-fade-in px-4" onClick={onClose}>
@@ -272,33 +247,6 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
                         </button>
                     </div>
 
-                    {/* Quick Demo Access — 2 buttons only (no Admin) */}
-                    <div className="relative z-10 mb-6">
-                        <div className="flex items-center gap-2 mb-3">
-                            <span className="text-neon/70"><IconZap /></span>
-                            <p className="text-[10px] text-ash/70 uppercase font-semibold tracking-[0.15em]">Quick Demo Access</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2.5">
-                            <button
-                                type="button"
-                                disabled={loading}
-                                onClick={() => quickLogin('commuter@navigo.com', 'Demo Commuter')}
-                                className="group flex items-center justify-center gap-2.5 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 rounded-xl text-[11px] text-mist/90 font-semibold transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
-                            >
-                                <span className="text-mist/60 group-hover:text-neon transition-colors"><IconCommuter /></span>
-                                <span>Commuter</span>
-                            </button>
-                            <button
-                                type="button"
-                                disabled={loading}
-                                onClick={() => quickLogin('scout@navigo.com', 'Demo Scout')}
-                                className="group flex items-center justify-center gap-2.5 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-neon/30 rounded-xl text-[11px] text-neon/90 font-semibold transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
-                            >
-                                <span className="text-neon/50 group-hover:text-neon transition-colors"><IconScout /></span>
-                                <span>Scout</span>
-                            </button>
-                        </div>
-                    </div>
 
                     {/* Divider */}
                     <div className="relative z-10 flex items-center gap-4 mb-6">
