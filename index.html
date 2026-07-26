@@ -73,11 +73,44 @@
       z-index: 0;
       background: #0A0A0A !important;
     }
-    .glass-panel {
-      background: rgba(20, 20, 20, 0.82);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    /* Dynamic Theme Support (Light / Dark) */
+    html.light body, .light {
+      background-color: #F8FAFC !important;
+      color: #0F172A !important;
+    }
+    html.light .glass-panel {
+      background: rgba(255, 255, 255, 0.92) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
+      color: #0F172A !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light .text-white {
+      color: #0F172A !important;
+    }
+    html.light .text-mist {
+      color: #1E293B !important;
+    }
+    html.light .text-ash {
+      color: #64748B !important;
+    }
+    html.light .bg-void, html.light .bg-obsidian, html.light .bg-\[\#121212\], html.light .bg-\[\#1E1E1E\], html.light .bg-\[\#0F172A\] {
+      background-color: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+    html.light input, html.light select, html.light textarea {
+      background-color: #FFFFFF !important;
+      color: #0F172A !important;
+      border-color: #CBD5E1 !important;
+    }
+    html.light .leaflet-container {
+      background: #F1F5F9 !important;
+    }
+    html.light .leaflet-popup-content-wrapper {
+      background: #FFFFFF !important;
+      color: #0F172A !important;
+      border: 1px solid rgba(0, 0, 0, 0.1) !important;
     }
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;

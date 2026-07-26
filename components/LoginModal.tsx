@@ -194,13 +194,55 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
                         <button
                             type="button"
                             onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-                            className="text-xs text-ash hover:text-azure transition-colors flex items-center justify-center w-full group"
+                            className="text-xs text-ash hover:text-azure transition-colors flex items-center justify-center w-full group mb-4"
                         >
                             <span className="opacity-60">{mode === 'signin' ? "New to NaviGo?" : "Existing user?"}</span>
                             <span className="ml-1.5 font-bold group-hover:underline">
                                 {mode === 'signin' ? 'Establish Node' : 'Return to Login'}
                             </span>
                         </button>
+
+                        <div className="pt-3 border-t border-white/10">
+                            <p className="text-[10px] text-ash uppercase font-bold tracking-wider mb-2">Quick Evaluation Demo Accounts</p>
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        setEmail('commuter@navigo.com');
+                                        setPassword('admin');
+                                        const u = await databaseService.loginPrototype('commuter@navigo.com', 'admin');
+                                        if (u) { showToast('LoggedIn as Demo Commuter', 'success'); onLoginSuccess(u); }
+                                    }}
+                                    className="px-2 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] text-mist font-bold truncate transition-colors"
+                                >
+                                    🚶 Commuter
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        setEmail('scout@navigo.com');
+                                        setPassword('admin');
+                                        const u = await databaseService.loginPrototype('scout@navigo.com', 'admin');
+                                        if (u) { showToast('LoggedIn as Demo Scout', 'success'); onLoginSuccess(u); }
+                                    }}
+                                    className="px-2 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] text-neon font-bold truncate transition-colors"
+                                >
+                                    ★ Scout
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        setEmail('admin@navigo.com');
+                                        setPassword('admin');
+                                        const u = await databaseService.loginPrototype('admin@navigo.com', 'admin');
+                                        if (u) { showToast('LoggedIn as Controller Admin', 'success'); onLoginSuccess(u); }
+                                    }}
+                                    className="px-2 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-[10px] text-azure font-bold truncate transition-colors"
+                                >
+                                    ⚙️ Admin
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </div>

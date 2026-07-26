@@ -97,6 +97,12 @@ Navigo is architected to operate at **$0 API cost** while serving high-performan
 
 ## 5. Version History & Documentation Log
 
+### [v1.4.0] — July 26, 2026
+- **Professional Light & Dark Mode Engine**: Added global Light Mode CSS rules (`html.light`) for crisp contrast across all panels, modals, and popups.
+- **Quick Evaluation Demo Accounts**: Added 1-click Demo Account shortcuts (*Demo Commuter*, *Demo Scout*, *Demo Controller*) inside `LoginModal.tsx` for instant testing alongside Firebase Auth.
+- **UI/UX Polish**: Verified zero-error build and end-to-end theme persistence.
+- **GitHub Sync**: Pushed latest updates to `https://github.com/anjo2007/Navigo_proto.git`.
+
 ### [v1.3.0] — July 26, 2026
 - **Compact Header UI**: Reduced header container width (`max-w-xs md:max-w-sm`) and moved `⚡ AI Key` settings inside Profile.
 - **Guest Mode & Delayed Login**: Default new users to `Guest Traveler` (0 points), with `LoginPromptModal` triggering after 2 searches.
