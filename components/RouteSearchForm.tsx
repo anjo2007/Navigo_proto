@@ -104,11 +104,11 @@ const RouteSearchForm: React.FC<RouteSearchFormProps> = ({
   }, [debouncedDestination]);
 
   const quickCategories = [
-    { label: 'Food', icon: '🍴', category: 'restaurants' },
-    { label: 'Hospitals', icon: '🏥', category: 'hospitals' },
-    { label: 'Fuel', icon: '⛽', category: 'petrol pumps' },
-    { label: 'Parks', icon: '🌳', category: 'parks' },
-    { label: 'Hotels', icon: '🏨', category: 'hotels' }
+    { label: 'Food', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 0 1-6 6 6 6 0 0 1-6-6 6 6 0 0 1 12 0z"/><path d="M12 2v6"/><path d="M12 14v8"/></svg>, category: 'restaurants' },
+    { label: 'Hospitals', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 7v6M9 10h6"/></svg>, category: 'hospitals' },
+    { label: 'Fuel', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18"/><path d="M13 11l4-4a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L17 14v4a2 2 0 0 1-2 2h-2"/><rect x="5" y="6" width="6" height="5" rx="1"/></svg>, category: 'petrol pumps' },
+    { label: 'Parks', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L7 10h3l-4 7h6v5h2v-5h6l-4-7h3z"/></svg>, category: 'parks' },
+    { label: 'Hotels', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/><path d="M9 6h6M9 10h6M9 14h6M9 18h6"/></svg>, category: 'hotels' }
   ];
 
   return (
@@ -169,7 +169,7 @@ const RouteSearchForm: React.FC<RouteSearchFormProps> = ({
       <div className="bg-obsidian rounded-xl p-4 border border-white/5">
         <button type="button" onClick={() => setIsPreferencesOpen(!isPreferencesOpen)} className="flex items-center justify-between w-full text-xs font-bold text-ash uppercase tracking-widest">
           <span>Trip Settings</span>
-          <span className={`transition-transform ${isPreferencesOpen ? 'rotate-180' : ''}`}>▼</span>
+          <svg className={`w-4 h-4 transition-transform ${isPreferencesOpen ? 'rotate-180' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         {isPreferencesOpen && (
           <div className="mt-4 space-y-4 animate-fade-in">
@@ -198,10 +198,10 @@ const RouteSearchForm: React.FC<RouteSearchFormProps> = ({
                     key={cat.label}
                     type="button"
                     onClick={() => onNearbySearch(cat.category)}
-                    className="flex-shrink-0 flex items-center space-x-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-2 transition-all active:scale-95 group"
+                    className="flex-shrink-0 flex items-center space-x-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full px-4 py-2 transition-all active:scale-95 group text-ash hover:text-white"
                 >
-                    <span className="text-sm group-hover:scale-110 transition-transform">{cat.icon}</span>
-                    <span className="text-[10px] font-bold text-ash group-hover:text-white uppercase tracking-wider">{cat.label}</span>
+                    <span className="group-hover:scale-110 transition-transform">{cat.icon}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{cat.label}</span>
                 </button>
             ))}
         </div>

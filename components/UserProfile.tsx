@@ -66,7 +66,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                                     {trust.label}
                                 </span>
                                 <span className="px-2.5 py-0.5 bg-neon/10 border border-neon/30 text-neon text-[10px] font-bold rounded-full flex items-center space-x-1">
-                                    <span>⚡ AI Engine Active</span>
+                                    <svg className="w-3 h-3 text-neon" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                    <span>AI Engine Active</span>
                                 </span>
                             </div>
                         </div>
@@ -122,7 +123,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                                 <div className="space-y-5">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 bg-neon/10 rounded-xl flex items-center justify-center text-neon border border-neon/10">🏆</div>
+                                            <div className="w-10 h-10 bg-neon/10 rounded-xl flex items-center justify-center text-neon border border-neon/10">
+                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17M14 14.66V17M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+                                            </div>
                                             <div>
                                                 <p className="text-sm font-bold text-mist">First Contribution</p>
                                                 <p className="text-[10px] text-ash font-medium">Earned on joining NaviGo</p>
@@ -132,7 +135,9 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center space-x-4">
-                                            <div className="w-10 h-10 bg-azure/10 rounded-xl flex items-center justify-center text-azure border border-azure/10">🚌</div>
+                                            <div className="w-10 h-10 bg-azure/10 rounded-xl flex items-center justify-center text-azure border border-azure/10">
+                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6v6M15 6v6M2 12h20M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                                            </div>
                                             <div>
                                                 <p className="text-sm font-bold text-mist">Route Master</p>
                                                 <p className="text-[10px] text-ash font-medium">10 Bus Reports Required</p>
@@ -211,9 +216,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                                             {idx + 1}
                                         </div>
                                         <div>
-                                            <div className="text-sm text-mist font-bold flex items-center">
+                                            <div className="text-sm text-mist font-bold flex items-center gap-1.5">
                                                 {entry.userId === user.id ? 'YOU (Verified Node)' : entry.userName}
-                                                {idx < 3 && <span className="ml-2 text-xs">⭐</span>}
+                                                {idx < 3 && (
+                                                    <svg className="w-3.5 h-3.5 text-yellow-400" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                )}
                                             </div>
                                             <div className="text-[10px] text-ash uppercase font-bold tracking-widest mt-0.5 opacity-50">Global Rank #{idx + 1}</div>
                                         </div>

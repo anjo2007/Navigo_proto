@@ -73,16 +73,18 @@ const GeminiKeyModal: React.FC<GeminiKeyModalProps> = ({ isOpen, onClose, onSucc
           {/* Instructions Box */}
           <div className="bg-obsidian/80 border border-white/10 rounded-2xl p-5 mb-6 space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-neon uppercase tracking-wider flex items-center">
-                <span className="mr-2">💡</span> How to get your free Gemini API Key
+              <h3 className="text-xs font-bold text-neon uppercase tracking-wider flex items-center gap-2">
+                <svg className="w-4 h-4 text-neon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                How to get your free Gemini API Key
               </h3>
               <a 
                 href="https://aistudio.google.com/app/apikey" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-xs text-azure hover:underline font-bold flex items-center"
+                className="text-xs text-azure hover:underline font-bold flex items-center gap-1"
               >
-                Open AI Studio ↗
+                <span>Open AI Studio</span>
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </a>
             </div>
 
@@ -120,13 +122,15 @@ const GeminiKeyModal: React.FC<GeminiKeyModalProps> = ({ isOpen, onClose, onSucc
 
             {error && (
               <p className="text-coral text-xs font-bold flex items-center space-x-1.5 animate-shake">
-                <span>⚠️</span> <span>{error}</span>
+                <svg className="w-4 h-4 text-coral flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{error}</span>
               </p>
             )}
 
             {savedSuccess && (
-              <div className="bg-neon/10 border border-neon/40 text-neon p-3 rounded-xl text-xs font-bold text-center animate-fade-in">
-                ✓ API Key Saved Successfully! Initializing AI Engine...
+              <div className="bg-neon/10 border border-neon/40 text-neon p-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 animate-fade-in">
+                <svg className="w-4 h-4 text-neon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>API Key Saved Successfully! Initializing AI Engine...</span>
               </div>
             )}
 

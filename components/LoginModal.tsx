@@ -1,9 +1,49 @@
 import React, { useState } from 'react';
 import { UserRole, User } from '../types';
 import { getFirebaseAuth } from '../services/firebaseClient';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { databaseService } from '../services/databaseService';
 import { useToast } from '../context/ToastContext';
+
+// --- Professional SVG Icon Components ---
+const IconGoogle = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.29v3.15C3.26 21.3 7.31 24 12 24z"/>
+        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.29C.47 8.21 0 10.05 0 12s.47 3.79 1.29 5.42l3.99-3.15z"/>
+        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.58l3.99 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+    </svg>
+);
+const IconClose = () => (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 4.5l9 9M13.5 4.5l-9 9"/></svg>
+);
+const IconCommuter = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/><path d="M16 22H8l1-8h6l1 8z"/><path d="M9 14l-1.5 3M15 14l1.5 3"/></svg>
+);
+const IconScout = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" opacity="0.15"/><polygon points="12 6 13.8 10.2 18.2 10.6 14.9 13.5 15.8 18 12 15.6 8.2 18 9.1 13.5 5.8 10.6 10.2 10.2 12 6"/></svg>
+);
+const IconMail = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M22 7l-10 6L2 7"/></svg>
+);
+const IconLock = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1.5" fill="currentColor"/></svg>
+);
+const IconUser = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+);
+const IconArrowRight = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+);
+const IconShield = () => (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l8 4v5c0 5.25-3.5 9.74-8 11-4.5-1.26-8-5.75-8-11V6l8-4z"/><path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2"/></svg>
+);
+const IconAlertTriangle = () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+);
+const IconZap = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+);
 
 interface LoginModalProps {
     onLoginSuccess: (user: User) => void;
@@ -20,6 +60,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
     const [isAmbassador, setIsAmbassador] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [showPassword, setShowPassword] = useState(false);
     
     const { showToast } = useToast();
 
@@ -68,7 +109,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
                         }
                     } catch {}
                 }
-                setErrorMsg('No account found. Try signing up or use a demo account below.');
+                setErrorMsg('No account found. Try signing up or use a demo account.');
             }
             setLoading(false);
             return;
@@ -116,6 +157,52 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
                 msg = 'Password too weak. Use at least 6 characters.';
             } else if (code === 'auth/invalid-email') {
                 msg = 'Invalid email format.';
+            } else if (code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
+                msg = 'Firebase is not configured. Use a demo account or set up Firebase.';
+            } else if (err?.message) {
+                msg = err.message;
+            }
+            setErrorMsg(msg);
+            showToast(msg, 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGoogleAuth = async () => {
+        setLoading(true);
+        setErrorMsg(null);
+        const auth = getFirebaseAuth();
+        if (!auth) {
+            setErrorMsg('Firebase is not configured.');
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            if (result.user) {
+                const user = await databaseService.upsertProfile(
+                    result.user.uid,
+                    result.user.email || '',
+                    result.user.displayName || result.user.email?.split('@')[0] || 'User',
+                    'India',
+                    'user',
+                    false
+                );
+                if (user) {
+                    showToast(`Welcome back, ${user.name}!`, 'success');
+                    onLoginSuccess(user);
+                }
+            }
+        } catch (err: any) {
+            const code = err?.code || '';
+            let msg = 'Google Sign-In failed.';
+            if (code === 'auth/popup-closed-by-user') {
+                msg = 'Google Sign-In window was closed before completing.';
+            } else if (code === 'auth/operation-not-allowed') {
+                msg = 'Google provider is not enabled in Firebase Console. Go to Authentication > Sign-in method > Add new provider > Google to enable it.';
             } else if (err?.message) {
                 msg = err.message;
             }
@@ -138,140 +225,198 @@ const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in px-4" onClick={onClose}>
-            <div className="glass-panel rounded-[2rem] p-8 w-full max-w-md transform transition-all scale-100 shadow-[0_0_80px_rgba(0,0,0,0.5)] border-white/10 overflow-hidden relative max-h-[90vh] overflow-y-auto custom-scrollbar" onClick={e => e.stopPropagation()}>
-                {/* Visual Accent */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-azure/20 blur-[80px] rounded-full"></div>
-                
-                <div className="flex justify-between items-center mb-6 relative z-10">
-                    <div>
-                        <h2 className="text-2xl font-bold text-white tracking-tight">
-                            {mode === 'signin' ? 'Sign In' : 'Create Account'}
-                        </h2>
-                        <p className="text-ash text-[10px] mt-1 uppercase tracking-widest font-bold opacity-60">NaviGo Identity Service</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-ash hover:text-white">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-lg animate-fade-in px-4" onClick={onClose}>
+            <div
+                className="glass-panel rounded-[2rem] w-full max-w-[420px] transform transition-all scale-100 shadow-[0_8px_64px_rgba(0,0,0,0.6)] border border-white/[0.08] overflow-hidden relative max-h-[90vh] overflow-y-auto custom-scrollbar"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Top gradient accent bar */}
+                <div className="h-1 w-full bg-gradient-to-r from-neon via-azure to-neon/60"></div>
 
-                {/* Quick Demo Accounts — prominent at top */}
-                <div className="relative z-10 mb-6">
-                    <p className="text-[10px] text-ash uppercase font-bold tracking-wider mb-2">⚡ Quick Demo Access</p>
-                    <div className="grid grid-cols-3 gap-2">
+                {/* Background glow accents */}
+                <div className="absolute -top-32 -right-32 w-64 h-64 bg-azure/10 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-neon/8 blur-[100px] rounded-full pointer-events-none"></div>
+
+                <div className="p-8">
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 text-neon/80">
+                                <IconShield />
+                            </div>
+                            <div>
+                                <h2 className="text-[22px] font-bold text-white tracking-tight leading-tight">
+                                    {mode === 'signin' ? 'Welcome Back' : 'Create Account'}
+                                </h2>
+                                <p className="text-ash/60 text-[10px] mt-1 uppercase tracking-[0.2em] font-semibold">NaviGo Identity</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 text-ash/60 hover:text-white hover:rotate-90"
+                        >
+                            <IconClose />
+                        </button>
+                    </div>
+
+                    {/* Google Auth Button */}
+                    <div className="relative z-10 mb-5">
                         <button
                             type="button"
                             disabled={loading}
-                            onClick={() => quickLogin('commuter@navigo.com', 'Demo Commuter')}
-                            className="px-2 py-2.5 bg-white/5 hover:bg-neon/10 border border-white/10 hover:border-neon/30 rounded-xl text-[10px] text-mist font-bold transition-all disabled:opacity-40"
+                            onClick={handleGoogleAuth}
+                            className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white/10 hover:bg-white/15 border border-white/15 hover:border-white/30 rounded-xl text-white text-xs font-bold transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-40"
                         >
-                            🚶 Commuter
-                        </button>
-                        <button
-                            type="button"
-                            disabled={loading}
-                            onClick={() => quickLogin('scout@navigo.com', 'Demo Scout')}
-                            className="px-2 py-2.5 bg-white/5 hover:bg-neon/10 border border-white/10 hover:border-neon/30 rounded-xl text-[10px] text-neon font-bold transition-all disabled:opacity-40"
-                        >
-                            ★ Scout
-                        </button>
-                        <button
-                            type="button"
-                            disabled={loading}
-                            onClick={() => quickLogin('admin@navigo.com', 'Controller Admin')}
-                            className="px-2 py-2.5 bg-white/5 hover:bg-azure/10 border border-white/10 hover:border-azure/30 rounded-xl text-[10px] text-azure font-bold transition-all disabled:opacity-40"
-                        >
-                            ⚙️ Admin
+                            <IconGoogle />
+                            <span>Continue with Google</span>
                         </button>
                     </div>
-                </div>
 
-                <div className="relative z-10 flex items-center gap-3 mb-6">
-                    <div className="flex-1 h-px bg-white/10"></div>
-                    <span className="text-[10px] text-ash uppercase font-bold tracking-wider">or use email</span>
-                    <div className="flex-1 h-px bg-white/10"></div>
-                </div>
-                
-                <form onSubmit={handleAuth} className="space-y-4 relative z-10">
-                    {mode === 'signup' && (
-                        <div className="animate-fade-in-up">
-                            <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-1.5 ml-1">Full Name</label>
-                            <input 
-                                type="text" 
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-neon focus:ring-1 focus:ring-neon/50 outline-none transition-all placeholder:text-gray-600"
-                                value={fullName}
-                                onChange={e => setFullName(e.target.value)}
-                                placeholder="e.g. John Doe"
-                                required
-                            />
+                    {/* Quick Demo Access — 2 buttons only (no Admin) */}
+                    <div className="relative z-10 mb-6">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span className="text-neon/70"><IconZap /></span>
+                            <p className="text-[10px] text-ash/70 uppercase font-semibold tracking-[0.15em]">Quick Demo Access</p>
                         </div>
-                    )}
-
-                    <div>
-                        <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-                        <input 
-                            type="email" 
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-azure focus:ring-1 focus:ring-azure/50 outline-none transition-all placeholder:text-gray-600"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            placeholder="you@example.com"
-                            required
-                        />
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <button
+                                type="button"
+                                disabled={loading}
+                                onClick={() => quickLogin('commuter@navigo.com', 'Demo Commuter')}
+                                className="group flex items-center justify-center gap-2.5 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/20 rounded-xl text-[11px] text-mist/90 font-semibold transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                                <span className="text-mist/60 group-hover:text-neon transition-colors"><IconCommuter /></span>
+                                <span>Commuter</span>
+                            </button>
+                            <button
+                                type="button"
+                                disabled={loading}
+                                onClick={() => quickLogin('scout@navigo.com', 'Demo Scout')}
+                                className="group flex items-center justify-center gap-2.5 px-4 py-3 bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] hover:border-neon/30 rounded-xl text-[11px] text-neon/90 font-semibold transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                                <span className="text-neon/50 group-hover:text-neon transition-colors"><IconScout /></span>
+                                <span>Scout</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-[10px] font-bold text-ash uppercase tracking-widest mb-1.5 ml-1">Password</label>
-                        <input 
-                            type="password" 
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:border-azure focus:ring-1 focus:ring-azure/50 outline-none transition-all placeholder:text-gray-600 font-mono"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            placeholder="••••••"
-                            required
-                            minLength={4}
-                        />
+                    {/* Divider */}
+                    <div className="relative z-10 flex items-center gap-4 mb-6">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+                        <span className="text-[10px] text-ash/50 uppercase font-semibold tracking-[0.15em]">or continue with email</span>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
                     </div>
-
-                    {errorMsg && (
-                        <div className="bg-coral/10 border border-coral/30 rounded-xl px-4 py-3 text-xs text-coral font-medium animate-fade-in">
-                            {errorMsg}
-                        </div>
-                    )}
-
-                    <button 
-                        type="submit" 
-                        disabled={loading}
-                        className={`w-full relative group overflow-hidden py-3.5 rounded-xl transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 
-                        ${loading ? 'bg-gray-800' : 'bg-neon hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] text-void'}`}
-                    >
-                        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="relative z-10 flex justify-center items-center">
-                            {loading ? (
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                    <span className="text-white font-bold tracking-widest uppercase text-xs">Authenticating...</span>
-                                </div>
-                            ) : (
-                                <span className="font-bold tracking-widest uppercase text-sm">
-                                    {mode === 'signin' ? 'Sign In' : 'Create Account'}
-                                </span>
-                            )}
-                        </div>
-                    </button>
                     
-                    <div className="text-center pt-2">
-                        <button
-                            type="button"
-                            onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrorMsg(null); }}
-                            className="text-xs text-ash hover:text-azure transition-colors group"
+                    {/* Auth Form */}
+                    <form onSubmit={handleAuth} className="space-y-4 relative z-10">
+                        {mode === 'signup' && (
+                            <div className="animate-fade-in-up">
+                                <label className="block text-[10px] font-semibold text-ash/60 uppercase tracking-[0.15em] mb-1.5 ml-1">Full Name</label>
+                                <div className="relative">
+                                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash/40"><IconUser /></div>
+                                    <input 
+                                        type="text" 
+                                        className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:border-neon/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-neon/20 outline-none transition-all duration-200 placeholder:text-white/20"
+                                        value={fullName}
+                                        onChange={e => setFullName(e.target.value)}
+                                        placeholder="Your full name"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-[10px] font-semibold text-ash/60 uppercase tracking-[0.15em] mb-1.5 ml-1">Email Address</label>
+                            <div className="relative">
+                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash/40"><IconMail /></div>
+                                <input 
+                                    type="email" 
+                                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:border-azure/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-azure/20 outline-none transition-all duration-200 placeholder:text-white/20"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    placeholder="you@example.com"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-semibold text-ash/60 uppercase tracking-[0.15em] mb-1.5 ml-1">Password</label>
+                            <div className="relative">
+                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ash/40"><IconLock /></div>
+                                <input 
+                                    type={showPassword ? 'text' : 'password'}
+                                    className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl pl-10 pr-11 py-3 text-white text-sm focus:border-azure/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-azure/20 outline-none transition-all duration-200 placeholder:text-white/20"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    required
+                                    minLength={4}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ash/40 hover:text-white/70 transition-colors p-0.5"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                    ) : (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Error message */}
+                        {errorMsg && (
+                            <div className="flex items-start gap-2.5 bg-coral/[0.08] border border-coral/20 rounded-xl px-4 py-3 animate-fade-in">
+                                <span className="text-coral mt-0.5 flex-shrink-0"><IconAlertTriangle /></span>
+                                <span className="text-[12px] text-coral/90 font-medium leading-relaxed">{errorMsg}</span>
+                            </div>
+                        )}
+
+                        {/* Submit Button */}
+                        <button 
+                            type="submit" 
+                            disabled={loading}
+                            className={`w-full relative group overflow-hidden py-3.5 rounded-xl transition-all duration-300 transform hover:scale-[1.015] active:scale-[0.985] disabled:opacity-40 disabled:pointer-events-none
+                            ${loading ? 'bg-white/[0.08]' : 'bg-gradient-to-r from-neon to-emerald-400 hover:shadow-[0_0_32px_rgba(0,230,118,0.3)] text-void'}`}
                         >
-                            <span className="opacity-60">{mode === 'signin' ? "Don't have an account?" : "Already have an account?"}</span>
-                            <span className="ml-1.5 font-bold group-hover:underline">
-                                {mode === 'signin' ? 'Sign Up' : 'Sign In'}
-                            </span>
+                            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-all duration-300"></div>
+                            <div className="relative z-10 flex justify-center items-center gap-2">
+                                {loading ? (
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                        <span className="text-white font-semibold tracking-wider uppercase text-xs">Authenticating…</span>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <span className="font-bold tracking-wider uppercase text-[13px]">
+                                            {mode === 'signin' ? 'Sign In' : 'Create Account'}
+                                        </span>
+                                        <IconArrowRight />
+                                    </>
+                                )}
+                            </div>
                         </button>
-                    </div>
-                </form>
+                        
+                        {/* Mode toggle */}
+                        <div className="text-center pt-2 pb-1">
+                            <button
+                                type="button"
+                                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErrorMsg(null); }}
+                                className="text-xs text-ash/60 hover:text-azure transition-colors duration-200 group"
+                            >
+                                <span>{mode === 'signin' ? "Don't have an account?" : "Already have an account?"}</span>
+                                <span className="ml-1.5 font-bold text-azure/80 group-hover:text-azure group-hover:underline underline-offset-2">
+                                    {mode === 'signin' ? 'Sign Up' : 'Sign In'}
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     );

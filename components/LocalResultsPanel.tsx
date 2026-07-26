@@ -14,10 +14,13 @@ const LocalResultsPanel: React.FC<LocalResultsPanelProps> = ({ category, results
   return (
     <div className="mt-6 animate-fade-in-up">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-bold text-white capitalize flex items-center">
-            <span className="mr-2">📍</span> {category} Near You
+        <h3 className="text-lg font-bold text-white capitalize flex items-center gap-2">
+            <svg className="w-5 h-5 text-azure" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            {category} Near You
         </h3>
-        <button onClick={onClose} className="p-2 text-ash hover:text-white bg-white/5 rounded-full">✕</button>
+        <button onClick={onClose} className="p-1.5 text-ash hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-colors">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
 
       <div className="space-y-3">
@@ -34,7 +37,10 @@ const LocalResultsPanel: React.FC<LocalResultsPanelProps> = ({ category, results
                             <p className="text-xs text-ash mt-1 leading-relaxed">{place.address}</p>
                             {place.rating && (
                                 <div className="flex items-center mt-2 space-x-1">
-                                    <span className="text-xs font-bold text-yellow-500">★ {place.rating}</span>
+                                    <span className="text-xs font-bold text-yellow-500 flex items-center gap-1">
+                                        <svg className="w-3.5 h-3.5 fill-current text-yellow-500" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        {place.rating}
+                                    </span>
                                     <span className="text-[10px] text-ash uppercase tracking-widest font-bold ml-2">{place.openingHours || 'Open Now'}</span>
                                 </div>
                             )}

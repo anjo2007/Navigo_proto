@@ -17,8 +17,8 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose, on
         <div className="h-1.5 w-full bg-gradient-to-r from-neon via-azure to-purple-500"></div>
 
         <div className="p-6 md:p-8 text-center space-y-5">
-          <div className="w-16 h-16 rounded-full bg-neon/10 border border-neon/30 flex items-center justify-center text-neon text-3xl mx-auto shadow-inner">
-            🌱
+          <div className="w-16 h-16 rounded-full bg-neon/10 border border-neon/30 flex items-center justify-center text-neon mx-auto shadow-inner">
+            <svg className="w-8 h-8 text-neon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></svg>
           </div>
 
           <div>
@@ -30,15 +30,15 @@ const LoginPromptModal: React.FC<LoginPromptModalProps> = ({ isOpen, onClose, on
 
           <div className="bg-obsidian/80 border border-white/10 rounded-2xl p-4 text-left space-y-2.5">
             <div className="flex items-center space-x-3 text-xs text-mist">
-              <span className="text-neon font-bold">✓</span>
+              <svg className="w-4 h-4 text-neon flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
               <span>Earn +10 Green Points per crowd report</span>
             </div>
             <div className="flex items-center space-x-3 text-xs text-mist">
-              <span className="text-azure font-bold">✓</span>
+              <svg className="w-4 h-4 text-azure flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
               <span>Save road-accurate routes to your vault</span>
             </div>
             <div className="flex items-center space-x-3 text-xs text-mist">
-              <span className="text-yellow-400 font-bold">✓</span>
+              <svg className="w-4 h-4 text-amber-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
               <span>Climb the global Scout Leaderboard</span>
             </div>
           </div>

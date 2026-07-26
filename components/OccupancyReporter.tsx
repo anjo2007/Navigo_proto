@@ -8,10 +8,10 @@ interface OccupancyReporterProps {
 }
 
 const levels = [
-    { id: OccupancyLevel.MANY_SEATS, label: 'Many Seats', color: 'bg-green-500', icon: '🟢' },
-    { id: OccupancyLevel.FEW_SEATS, label: 'Few Seats', color: 'bg-yellow-500', icon: '🟡' },
-    { id: OccupancyLevel.STANDING_ONLY, label: 'Standing Only', color: 'bg-orange-500', icon: '🟠' },
-    { id: OccupancyLevel.CRUSHED, label: 'Crushed', color: 'bg-red-500', icon: '🔴' },
+    { id: OccupancyLevel.MANY_SEATS, label: 'Many Seats', color: 'bg-emerald-500', icon: <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> },
+    { id: OccupancyLevel.FEW_SEATS, label: 'Few Seats', color: 'bg-amber-500', icon: <svg className="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> },
+    { id: OccupancyLevel.STANDING_ONLY, label: 'Standing Only', color: 'bg-orange-500', icon: <svg className="w-4 h-4 text-orange-400" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> },
+    { id: OccupancyLevel.CRUSHED, label: 'Crushed', color: 'bg-rose-500', icon: <svg className="w-4 h-4 text-rose-500" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg> },
 ];
 
 const OccupancyReporter: React.FC<OccupancyReporterProps> = ({ onSubmit, onClose }) => {

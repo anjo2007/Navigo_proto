@@ -73,8 +73,10 @@ const AddBusModal: React.FC<AddBusModalProps> = ({ onClose }) => {
                 {/* Header */}
                 <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#1E1E1E]">
                     <div>
-                        <h2 className="text-xl font-bold text-white flex items-center">
-                            <span className="bg-neon/20 text-neon p-2 rounded-lg mr-3">🚌</span>
+                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                            <span className="bg-neon/10 text-neon p-2.5 rounded-xl border border-neon/20 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-neon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 6v6M15 6v6M2 12h20M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                            </span>
                             Add Bus Route
                         </h2>
                         <p className="text-xs text-ash mt-1">Contribute to the community transport network.</p>

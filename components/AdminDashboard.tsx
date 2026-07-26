@@ -79,10 +79,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                             {reports.map((report) => (
                                 <div key={report.id} className="bg-[#1E1E1E] p-4 rounded-xl border border-white/5 flex justify-between items-center animate-fade-in-up">
                                     <div className="flex items-center space-x-4">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
-                                            report.level?.includes('CRUSHED') ? 'bg-red-900/50' : 'bg-green-900/50'
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                                            report.level?.includes('CRUSHED') ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                                         }`}>
-                                            {report.level?.includes('CRUSHED') ? '🔴' : '🟢'}
+                                            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
                                         </div>
                                         <div>
                                             <div className="flex items-center space-x-2">
