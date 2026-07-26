@@ -23,11 +23,13 @@ interface RoutePlannerProps {
     onAdminClick: () => void;
     onProfileClick: () => void;
     onAddBusClick: () => void;
+    onPromptLogin?: () => void;
 }
 
-const RoutePlanner: React.FC<RoutePlannerProps> = ({ user, onLoginClick, onLogoutClick, onAdminClick, onProfileClick, onAddBusClick }) => {
+const RoutePlanner: React.FC<RoutePlannerProps> = ({ user, onLoginClick, onLogoutClick, onAdminClick, onProfileClick, onAddBusClick, onPromptLogin }) => {
   const [start, setStart] = useState<string>('');
   const [destination, setDestination] = useState<string>('');
+  const [searchCount, setSearchCount] = useState(0);
   const [travelerProfile] = useState<string>('Solo Commuter');
   const [avoidModes, setAvoidModes] = useState<TransportMode[]>([]);
   const [preferences, setPreferences] = useState<UserPreferences>({
@@ -97,6 +99,13 @@ const RoutePlanner: React.FC<RoutePlannerProps> = ({ user, onLoginClick, onLogou
     const onComplete = () => {
         setIsLoading(false);
         setLoadingMessage('');
+        setSearchCount(c => {
+          const next = c + 1;
+          if (next >= 2 && user?.id === 'guest-traveler' && onPromptLogin) {
+            setTimeout(onPromptLogin, 1000);
+          }
+          return next;
+        });
     };
     
     const onError = (err: Error) => {

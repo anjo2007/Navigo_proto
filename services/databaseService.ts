@@ -46,6 +46,16 @@ const PROTOTYPE_USERS: Record<string, User> = {
   }
 };
 
+export const GUEST_USER: User = {
+  id: 'guest-traveler',
+  name: 'Guest Traveler',
+  email: 'guest@navigo.com',
+  role: 'user',
+  trustScore: 50,
+  greenPoints: 0,
+  isAmbassador: false
+};
+
 export const databaseService = {
   // --- AUTHENTICATION & PROFILES ---
 
@@ -131,7 +141,7 @@ export const databaseService = {
       }
     }
 
-    return null;
+    return GUEST_USER;
   },
 
   logout: async () => {

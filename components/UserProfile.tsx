@@ -58,12 +58,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onClose }) => {
                         <div className="flex-1">
                             <h2 className="text-3xl font-bold text-white tracking-tight leading-none">{user.name}</h2>
                             <p className="text-xs text-ash font-mono mt-2 opacity-60 tracking-wider truncate">{user.email}</p>
-                            <div className="flex items-center space-x-3 mt-4">
+                            <div className="flex flex-wrap items-center gap-2 mt-3">
                                 <span className="px-3 py-1 bg-white/5 border border-white/10 text-mist text-[10px] uppercase font-bold tracking-widest rounded-md">
                                     {user.role.replace('_', ' ')}
                                 </span>
                                 <span className={`text-[10px] uppercase font-black tracking-widest ${trust.color}`}>
                                     {trust.label}
+                                </span>
+                                <span className="px-2.5 py-0.5 bg-neon/10 border border-neon/30 text-neon text-[10px] font-bold rounded-full flex items-center space-x-1">
+                                    <span>⚡ AI Engine Active</span>
                                 </span>
                             </div>
                         </div>

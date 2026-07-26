@@ -1,56 +1,62 @@
-import React from 'react';
-// FIX: The 'Theme' type is not exported from '../App'. It is defined here to fix the import error.
-// import { Theme } from '../App';
+import React, { useState, useEffect } from 'react';
 import SunIcon from './icons/SunIcon';
 import MoonIcon from './icons/MoonIcon';
 import SystemIcon from './icons/SystemIcon';
 
-export type Theme = 'light' | 'dark' | 'system';
+export type ThemeMode = 'dark' | 'light' | 'system';
 
-interface ThemeToggleProps {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-}
-
-const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, setTheme }) => {
-  const toggleTheme = () => {
-    if (theme === 'light') {
-      setTheme('dark');
-    } else if (theme === 'dark') {
-      setTheme('system');
-    } else {
-      setTheme('light');
-    }
-  };
-  
-  const getIcon = () => {
-    switch (theme) {
-      case 'light':
-        return <MoonIcon className="w-5 h-5" />;
-      case 'dark':
-        return <SunIcon className="w-5 h-5" />;
-      case 'system':
-        return <SystemIcon className="w-5 h-5" />;
-      default:
-        return null;
-    }
-  };
-  
-  const getLabel = () => {
-    switch(theme) {
-        case 'light': return 'Switch to dark mode';
-        case 'dark': return 'Switch to system theme';
-        case 'system': return 'Switch to light mode';
-    }
+export const getStoredTheme = (): ThemeMode => {
+  try {
+    const t = localStorage.getItem('navigo_theme') as ThemeMode;
+    if (t === 'light' || t === 'dark' || t === 'system') return t;
+  } catch (e) {
+    // Ignore
   }
+  return 'dark';
+};
+
+export const applyThemeMode = (mode: ThemeMode) => {
+  const root = document.documentElement;
+  try {
+    localStorage.setItem('navigo_theme', mode);
+  } catch (e) {}
+
+  if (mode === 'light') {
+    root.classList.remove('dark');
+    root.classList.add('light');
+  } else if (mode === 'dark') {
+    root.classList.remove('light');
+    root.classList.add('dark');
+  } else {
+    // System preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.classList.remove('light', 'dark');
+    root.classList.add(prefersDark ? 'dark' : 'light');
+  }
+};
+
+const ThemeToggle: React.FC = () => {
+  const [theme, setTheme] = useState<ThemeMode>(getStoredTheme());
+
+  useEffect(() => {
+    applyThemeMode(theme);
+  }, [theme]);
+
+  const cycleTheme = () => {
+    const next: ThemeMode = theme === 'dark' ? 'light' : theme === 'light' ? 'system' : 'dark';
+    setTheme(next);
+  };
 
   return (
     <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 focus:ring-purple-500 transition-colors"
-      aria-label={getLabel()}
+      onClick={cycleTheme}
+      className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/10 hover:bg-white/20 text-mist text-xs font-bold transition-all border border-white/10"
+      title={`Theme: ${theme.toUpperCase()} (Click to toggle)`}
     >
-      {getIcon()}
+      {theme === 'dark' && <MoonIcon className="w-3.5 h-3.5 text-azure" />}
+      {theme === 'light' && <SunIcon className="w-3.5 h-3.5 text-yellow-400" />}
+      {theme === 'system' && <SystemIcon className="w-3.5 h-3.5 text-neon" />}
+      <span className="capitalize text-[10px]">{theme}</span>
     </button>
   );
 };

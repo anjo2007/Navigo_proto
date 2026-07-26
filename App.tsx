@@ -1,17 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
 import RoutePlanner from './components/RoutePlanner';
 import LoginModal from './components/LoginModal';
 import AdminDashboard from './components/AdminDashboard';
 import UserProfile from './components/UserProfile';
 import AddBusModal from './components/AddBusModal';
-import { databaseService } from './services/databaseService';
-import { User, UserRole } from './types';
+import LoginPromptModal from './components/LoginPromptModal';
+import { databaseService, GUEST_USER } from './services/databaseService';
+import { User } from './types';
 import { ToastProvider } from './context/ToastContext';
 
 const AppContent: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(GUEST_USER);
   const [showLogin, setShowLogin] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showAddBus, setShowAddBus] = useState(false);
@@ -21,22 +22,28 @@ const AppContent: React.FC = () => {
     const initSession = async () => {
         try {
             const currentUser = await databaseService.getCurrentUser();
-            setUser(currentUser);
+            if (currentUser) {
+              setUser(currentUser);
+            } else {
+              setUser(GUEST_USER);
+            }
         } catch (e) {
             console.error("Session init error:", e);
+            setUser(GUEST_USER);
         }
     };
     initSession();
   }, []);
 
-  const handleLoginSuccess = (user: User) => {
-      setUser(user);
+  const handleLoginSuccess = (loggedInUser: User) => {
+      setUser(loggedInUser);
       setShowLogin(false);
+      setShowLoginPrompt(false);
   };
 
   const handleLogout = async () => {
       await databaseService.logout();
-      setUser(null);
+      setUser(GUEST_USER);
       setShowAdmin(false);
       setShowProfile(false);
       setShowAddBus(false);
@@ -51,6 +58,11 @@ const AppContent: React.FC = () => {
         onAdminClick={() => setShowAdmin(true)}
         onProfileClick={() => setShowProfile(true)}
         onAddBusClick={() => setShowAddBus(true)}
+        onPromptLogin={() => {
+          if (user?.id === 'guest-traveler') {
+            setShowLoginPrompt(true);
+          }
+        }}
       />
       
       {showLogin && (
@@ -59,6 +71,15 @@ const AppContent: React.FC = () => {
             onClose={() => setShowLogin(false)} 
           />
       )}
+
+      <LoginPromptModal 
+        isOpen={showLoginPrompt} 
+        onClose={() => setShowLoginPrompt(false)} 
+        onLoginClick={() => {
+          setShowLoginPrompt(false);
+          setShowLogin(true);
+        }}
+      />
 
       {showAdmin && user?.role === 'admin' && (
           <AdminDashboard onClose={() => setShowAdmin(false)} />

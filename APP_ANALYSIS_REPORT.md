@@ -97,6 +97,13 @@ Navigo is architected to operate at **$0 API cost** while serving high-performan
 
 ## 5. Version History & Documentation Log
 
+### [v1.3.0] — July 26, 2026
+- **Compact Header UI**: Reduced header container width (`max-w-xs md:max-w-sm`) and moved `⚡ AI Key` settings inside Profile.
+- **Guest Mode & Delayed Login**: Default new users to `Guest Traveler` (0 points), with `LoginPromptModal` triggering after 2 searches.
+- **Live Bus & Train Timing Grounding**: Interactive "Live Timings" button in `RouteSegment` querying `gemini-2.5-flash` with Google Search Grounding (100% Free Tier).
+- **Multi-Theme Engine**: Built `ThemeToggle.tsx` with Dark, Light, and System Default options and `localStorage` persistence.
+- **GitHub Sync**: Pushed latest updates to `https://github.com/anjo2007/Navigo_proto.git`.
+
 ### [v1.2.0] — July 26, 2026
 - **Gemini 2.5 Flash Upgrade**: Upgraded primary AI model to `gemini-2.5-flash` with fallback failover chain to `gemini-2.5-pro`.
 - **Gemini API Key Onboarding Modal**: Added `GeminiKeyModal.tsx` guiding users to acquire a free key from Google AI Studio.
