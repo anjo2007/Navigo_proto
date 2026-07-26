@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
 
           <div className="flex items-center space-x-2">
              <div className="relative">
-                {user ? (
+                {user && user.id !== 'guest-traveler' ? (
                     <button 
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                         className="flex items-center space-x-2 bg-white/5 px-2.5 py-1.5 rounded-full hover:bg-white/10 transition-colors border border-white/10"
@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({
                             {user.name ? user.name.charAt(0) : 'U'}
                         </div>
                         <span className="text-xs font-bold text-gray-200 max-w-[90px] truncate">
-                            {user.name ? user.name.split(' ')[0] : 'Guest'}
+                            {user.name ? user.name.split(' ')[0] : 'User'}
                         </span>
                         {/* Points Pill */}
                         <div className="flex items-center space-x-1 px-1.5 py-0.5 bg-neon/10 rounded-full border border-neon/20 ml-1">
@@ -63,13 +63,13 @@ const Header: React.FC<HeaderProps> = ({
                 ) : (
                     <button 
                         onClick={onLoginClick}
-                        className="text-xs font-bold text-neon hover:text-green-300 px-3 py-1.5 bg-neon/10 rounded-full border border-neon/20"
+                        className="text-xs font-bold text-neon hover:text-green-300 px-3 py-1.5 bg-neon/10 rounded-full border border-neon/20 transition-colors"
                     >
                         Login
                     </button>
                 )}
 
-                {isMenuOpen && user && (
+                {isMenuOpen && user && user.id !== 'guest-traveler' && (
                     <div className="absolute right-0 top-full mt-2 w-60 bg-[#121824] rounded-2xl shadow-2xl border border-white/15 overflow-hidden animate-fade-in origin-top-right z-50">
                         <div className="px-4 py-3 border-b border-white/10 bg-white/5">
                             <p className="text-[10px] text-ash uppercase font-bold tracking-wider">Profile Session</p>
