@@ -68,6 +68,8 @@ export interface Route {
   summary: string;
   category: 'TIME_EFFICIENT' | 'BUDGET_FRIENDLY' | 'BALANCED';
   modeSummary: TransportMode[];
+  co2SavedKg?: number;
+  ecoScore?: string;
 }
 
 export interface SavedRoute extends Route {

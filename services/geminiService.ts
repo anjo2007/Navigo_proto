@@ -1,6 +1,10 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { Route, TransportMode, ChatMessage, UserPreferences, ScheduledOption, PlaceResult } from '../types';
 
+// State-of-the-Art Model Chain (Gemini 2.5 Flash as ultra-fast primary, 2.5 Pro as high-reasoning fallback)
+const PRIMARY_MODEL = 'gemini-2.5-flash';
+const FALLBACK_MODELS = ['gemini-2.5-pro', 'gemini-3-flash-preview'];
+
 export const getStoredGeminiKey = (): string | null => {
   try {
     const key = localStorage.getItem('navigo_gemini_key');
@@ -8,7 +12,6 @@ export const getStoredGeminiKey = (): string | null => {
   } catch (e) {
     // Ignore localStorage access errors
   }
-  // Fallback to Vite env var if provided
   return ((import.meta as any).env?.VITE_GEMINI_API_KEY as string) || null;
 };
 
@@ -39,6 +42,33 @@ const cleanJson = (text: string): string => {
   return cleaned;
 };
 
+// Resilient multi-tier model execution wrapper
+const generateContentWithFallback = async (params: {
+  contents: string | any;
+  config?: any;
+}) => {
+  const ai = getAI();
+  const candidateModels = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+
+  let lastError: any = null;
+  for (const model of candidateModels) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        ...params
+      });
+      return response;
+    } catch (err: any) {
+      console.warn(`Model ${model} failed, attempting next in chain...`, err?.message || err);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("All AI models in fallback chain failed.");
+};
+
+// Zero-cost memory cache for route searches
+const routeCache = new Map<string, Route[]>();
+
 export const streamRoutes = async (
   start: string, 
   destination: string, 
@@ -49,35 +79,39 @@ export const streamRoutes = async (
   onComplete: () => void,
   onError: (error: Error) => void
 ) => {
+  const cacheKey = `${start.trim().toLowerCase()}_to_${destination.trim().toLowerCase()}_${avoidModes.sort().join('_')}_${preferences.priority}`;
+  if (routeCache.has(cacheKey)) {
+    const cachedRoutes = routeCache.get(cacheKey)!;
+    cachedRoutes.forEach(r => onRouteReceived(r));
+    onComplete();
+    return;
+  }
+
   try {
-    const ai = getAI();
-    
     const prompt = `
-      You are an expert multi-modal urban transit route optimizer.
-      Generate 3 highly logical, realistic, and distinct journey options from "${start}" to "${destination}".
+      You are Navigo's AI Mobility Engine (Powered by Gemini 2.5 Flash).
+      Synthesize 3 highly accurate, realistic multi-modal journey options from "${start}" to "${destination}".
       
-      User Preferences & Profile:
-      - Traveler Profile: ${travelerProfile}
+      User Parameters:
+      - Profile: ${travelerProfile}
       - Walking Preference: ${preferences.walkingTolerance} tolerance
-      - Journey Priority: ${preferences.priority}
-      - Modes to Exclude: ${avoidModes.join(', ') || 'None'}
+      - Priority: ${preferences.priority}
+      - Excluded Modes: ${avoidModes.join(', ') || 'None'}
       
-      Requirements for accuracy:
-      1. Category 1 MUST be "TIME_EFFICIENT" (fastest, combining express transit / cabs).
-      2. Category 2 MUST be "BUDGET_FRIENDLY" (cheapest, prioritizing public bus / train / walk).
-      3. Category 3 MUST be "BALANCED" (optimal trade-off between time, cost, and convenience).
+      Requirements:
+      1. Category 1: "TIME_EFFICIENT" (Fastest express route).
+      2. Category 2: "BUDGET_FRIENDLY" (Cheapest route).
+      3. Category 3: "BALANCED" (Optimal blend of speed and cost).
       
-      For each segment in a route:
-      - Include exact mode: WALK, BUS, TRAIN, AUTO, TAXI, or FERRY.
-      - Provide real route/bus numbers if applicable (e.g. "Bus 500A", "Blue Line Metro").
-      - Provide detailed, turn-by-turn or boarding instructions in the "details" string.
-      - Provide estimated pathCoordinates with at least 2 coordinate points per segment.
+      For each route:
+      - Compute estimated CO₂ saved in Kilograms (co2SavedKg) compared to solo petrol driving.
+      - Assign an ecoScore ("A+", "A", or "B").
+      - For each segment include mode, start/end locations, duration, cost in INR, bus/train number if applicable, and pathCoordinates (min 2 points).
       
-      Output ONLY a JSON array of 3 Route objects matching the requested schema.
+      Output ONLY a valid JSON array of 3 Route objects matching the response schema.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+    const response = await generateContentWithFallback({
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -92,6 +126,8 @@ export const streamRoutes = async (
               category: { type: Type.STRING, enum: ["TIME_EFFICIENT", "BUDGET_FRIENDLY", "BALANCED"] },
               totalDurationMinutes: { type: Type.NUMBER },
               totalCostINR: { type: Type.NUMBER },
+              co2SavedKg: { type: Type.NUMBER },
+              ecoScore: { type: Type.STRING },
               modeSummary: { type: Type.ARRAY, items: { type: Type.STRING } },
               segments: {
                 type: Type.ARRAY,
@@ -119,7 +155,7 @@ export const streamRoutes = async (
             required: ["name", "totalDurationMinutes", "segments", "category"]
           }
         }
-      },
+      }
     });
     
     const routes = JSON.parse(cleanJson(response.text || '[]'));
@@ -127,14 +163,17 @@ export const streamRoutes = async (
     if (Array.isArray(routes) && routes.length > 0) {
       routes.forEach((route: any) => {
         if (!route.id) route.id = Math.random().toString(36).substr(2, 9);
+        if (!route.co2SavedKg) route.co2SavedKg = Math.round((route.totalDurationMinutes * 0.08) * 10) / 10;
+        if (!route.ecoScore) route.ecoScore = 'A+';
         onRouteReceived(route);
       });
+      routeCache.set(cacheKey, routes);
       onComplete();
     } else {
-      throw new Error("Invalid route format returned from AI.");
+      throw new Error("Invalid response format from Gemini engine.");
     }
   } catch (error: any) {
-    console.error("Route generation error:", error);
+    console.error("Gemini route optimization error:", error);
     onError(error);
   }
 };
@@ -144,11 +183,9 @@ export const searchNearbyPlaces = async (
   location: string
 ): Promise<{ results: PlaceResult[]; sources: { title: string; uri: string }[] }> => {
   try {
-    const ai = getAI();
-    const prompt = `Find top 5 highly-rated ${category} near ${location}. Return actual business/place names, real addresses, ratings, and phone numbers.`;
+    const prompt = `Find top 5 highly-rated ${category} near ${location}. Return real business names, addresses, ratings, and phone numbers.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+    const response = await generateContentWithFallback({
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
@@ -195,11 +232,9 @@ export const getRealtimeSchedules = async (
   end: string
 ): Promise<{ options: ScheduledOption[]; sources: { title: string; uri: string }[] }> => {
   try {
-    const ai = getAI();
     const prompt = `Provide the latest 5 realistic ${mode} options from "${start}" to "${end}". Include exact departure/arrival times, operator name, price in INR, and occupancy status.`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+    const response = await generateContentWithFallback({
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
@@ -256,13 +291,11 @@ export const chatWithTravelAssistant = async (
   context: { start: string, destination: string, selectedRoute?: string }
 ): Promise<{ text: string; sources?: { title: string; uri: string }[] }> => {
   try {
-    const ai = getAI();
-    const systemInstruction = `You are Navi, the high-intelligence urban mobility assistant of Navigo. 
-    Context: Trip from "${context.start || 'current location'}" to "${context.destination || 'target location'}".
-    Be helpful, direct, accurate, and concise. Provide actionable advice for commuters.`;
+    const systemInstruction = `You are Navi, the high-performance Mobility Intelligence of Navigo (Powered by Gemini 2.5 Flash). 
+    Context: Commuter journey from "${context.start || 'current location'}" to "${context.destination || 'destination'}".
+    Provide crisp, highly actionable, eco-friendly transit advice.`;
 
-    const response = await ai.models.generateContent({
-       model: "gemini-3-flash-preview",
+    const response = await generateContentWithFallback({
        contents: userMessage,
        config: { systemInstruction, tools: [{googleSearch: {}}] },
     });
@@ -272,7 +305,7 @@ export const chatWithTravelAssistant = async (
     return { text, sources };
   } catch (error: any) {
     if (error?.message === "GEMINI_KEY_MISSING") {
-      return { text: "Please enter your Gemini API Key to enable Navi AI Assistant." };
+      return { text: "Please configure your Gemini API Key to activate Navi Assistant." };
     }
     return { text: "Error connecting to Navi Intelligence. Please check your API key." };
   }
