@@ -60,7 +60,7 @@ const RouteCard: React.FC<RouteCardProps> = ({ route, isExpanded, onToggleExpand
     const segmentLines = route.segments.map((seg, i) => {
       const mode = modeLabels[seg.mode] || seg.mode;
       const cost = seg.costINR > 0 ? ` • ₹${seg.costINR}` : '';
-      return `  ${i + 1}. ${mode}: ${seg.from} → ${seg.to} (${seg.durationMinutes} min${cost})`;
+      return `  ${i + 1}. ${mode}: ${seg.start} → ${seg.end} (${seg.durationMinutes} min${cost})`;
     }).join('\n');
 
     return [
