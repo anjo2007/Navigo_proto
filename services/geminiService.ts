@@ -1,9 +1,9 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { Route, TransportMode, ChatMessage, UserPreferences, ScheduledOption, PlaceResult } from '../types';
 
-// State-of-the-Art Model Chain (Gemini 2.5 Flash as primary, with 2.0-flash, 1.5-flash, 2.5-pro fallbacks)
+// State-of-the-Art Model Chain (Gemini 2.5 Flash as primary, with 2.0-flash and 1.5-flash fallbacks)
 const PRIMARY_MODEL = 'gemini-2.5-flash';
-const FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
+const FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
 
 export const getStoredGeminiKey = (): string | null => {
   try {

@@ -33,7 +33,7 @@ export const streamRoutes = async (
     `;
   
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -102,7 +102,7 @@ export const searchNearbyPlaces = async (
     const prompt = `Find top 5 ${category} near ${location}. Return actual business names, addresses, and ratings.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
@@ -153,7 +153,7 @@ export const getRealtimeSchedules = async (
     const prompt = `Latest 5 ${mode} options from "${start}" to "${end}". JSON list.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         tools: [{ googleSearch: {} }],
@@ -212,7 +212,7 @@ export const chatWithTravelAssistant = async (
     const systemInstruction = `You are Navi, the Mobility Intelligence of NaviGo. Context: Trip from ${context.start} to ${context.destination}.`;
 
     const response = await ai.models.generateContent({
-       model: "gemini-3-flash-preview",
+       model: "gemini-2.5-flash",
        contents: userMessage,
        config: { systemInstruction, tools: [{googleSearch: {}}] },
     });
